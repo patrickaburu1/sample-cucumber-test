@@ -21,10 +21,16 @@ public class GetPostSteps {
                then().body("author",is("typicode"));
     }
 
+    @And("I perform GET for the post number not found {string}")
+    public void iPerformGETForThePostNumberNotFound(String postNumber) {
+        when().get(String.format("http://localhost:3000/posts/%s",postNumber)).
+                then().statusCode(404);
+    }
     @Then("^I should see the author name as \"([^\"]*)\"$")
     public void iShouldSeeTheAuthorNameAs(String arg0)  {
 
     }
+
 
 
 }
