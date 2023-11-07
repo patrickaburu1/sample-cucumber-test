@@ -10,6 +10,7 @@ import static org.hamcrest.CoreMatchers.*;
 
 public class GetPostSteps {
 
+
     @Given("I perform GET operation for {string}")
     public void iPerformGETOperationFor(String arg0) {
         given().contentType(ContentType.JSON);
