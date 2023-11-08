@@ -1,0 +1,36 @@
+image: openjdk:11-jdk-slim
+stages:
+  - build
+  - buildImage
+  - deploy
+build:
+  stage: build
+  script:
+    - apt-get update
+    - apt-get -y install maven
+    - mvn clean package
+  artifacts:
+    paths:
+      - target/*.jar
+buildImage:
+  stage: buildImage
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker build -t patrickaburu/order-service-api:latest -f Dockerfile .
+    - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+    - docker push patrickaburu/order-service-api:latest
+deploy:
+  stage: deploy
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+    - chmod 400 digitalkey
+    - scp  -i digitalkey -o StrictHostKeyChecking=no app-deployment.yml kaburu@1ip:/home/kaburu
+    - scp  -i digitalkey -o StrictHostKeyChecking=no app-service.yml kaburu@1ip:/home/kaburu
+    - scp  -i digitalkey -o StrictHostKeyChecking=no hpa.yml kaburu@1ip:/home/kaburu
+    - ssh -i digitalkey -o StrictHostKeyChecking=no kaburu@ip "kubectl apply -f app-deployment.yml && rm -rf app-deployment.yml"
+    - ssh -i digitalkey -o StrictHostKeyChecking=no kaburu@ip "kubectl apply -f app-service.yml && rm -rf app-service.yml"
